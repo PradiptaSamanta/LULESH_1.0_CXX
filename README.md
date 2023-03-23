@@ -1,2 +1,2 @@
 # LULESH_1.0_CXX
-Here I started from a code which has already been developed (Note by me, I obtained the original code from [here](https://github.com/LLNL/LULESH/tree/46c2a1d6db9171f9637d79f407212e0f176e8194)). This is a serial code and I tried to make parallel using different schemes. 
+Here I started from a code which has already been developed (Not by me, I obtained the original code from [here](https://github.com/LLNL/LULESH/tree/46c2a1d6db9171f9637d79f407212e0f176e8194)). This is a serial code and I tried to make parallel using different schemes. 
