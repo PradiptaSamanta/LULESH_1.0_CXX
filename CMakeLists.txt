@@ -8,7 +8,7 @@ project(LULESH CXX)
 
 set(LULESH_SOURCES
   src/utils.cc
-  src/LULESH.cc)
+  src/lulesh.cc)
 
 set(LULESH_EXEC lulesh1.0)
 

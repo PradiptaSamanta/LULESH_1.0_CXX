@@ -100,5 +100,5 @@ void CalcElemShapeFunctionDerivatives( const Real_t* const x,
 // calc_force.cc
 void CalcVolumeForceForElems(void);
 
-void InitStressTermsForElems(Index_t numElem, 
-                             Real_t *sigxx, Real_t *sigyy, Real_t *sigzz);
+//void InitStressTermsForElems(Index_t numElem, 
+//                             Real_t *sigxx, Real_t *sigyy, Real_t *sigzz);
