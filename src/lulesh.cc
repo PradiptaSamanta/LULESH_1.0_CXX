@@ -128,6 +128,7 @@ void InitStressTermsForElems(Index_t numElem,
    //
    // pull in the stresses appropriate to the hydro integration
    //
+#pragma omp parallel for firstprivate(numElem)
    for (Index_t i = 0 ; i < numElem ; ++i){
       sigxx[i] =  sigyy[i] = sigzz[i] =  - mesh.p(i) - mesh.q(i) ;
    }
@@ -447,14 +448,7 @@ void CalcFBHourglassForceForElems(Real_t *determ,
 
    Index_t numElem = mesh.numElem() ;
 
-   Real_t hgfx[8], hgfy[8], hgfz[8] ;
-
-   Real_t coefficient;
-
    Real_t  gamma[4][8];
-   Real_t hourgam0[4], hourgam1[4], hourgam2[4], hourgam3[4] ;
-   Real_t hourgam4[4], hourgam5[4], hourgam6[4], hourgam7[4];
-   Real_t xd1[8], yd1[8], zd1[8] ;
 
    gamma[0][0] = Real_t( 1.);
    gamma[0][1] = Real_t( 1.);
@@ -493,64 +487,74 @@ void CalcFBHourglassForceForElems(Real_t *determ,
 /*    compute the hourglass modes */
 
 
+//#pragma omp parallel for firstprivate(numElem, hourg)
+   printf("WAS HERE:  \n");
    for(Index_t i2=0;i2<numElem;++i2){
-      const Index_t *elemToNode = mesh.nodelist(i2);
-      Index_t i3=8*i2;
-      Real_t volinv=Real_t(1.0)/determ[i2];
-      Real_t ss1, mass1, volume13 ;
-      for(Index_t i1=0;i1<4;++i1){
 
-         Real_t hourmodx =
-            x8n[i3] * gamma[i1][0] + x8n[i3+1] * gamma[i1][1] +
-            x8n[i3+2] * gamma[i1][2] + x8n[i3+3] * gamma[i1][3] +
-            x8n[i3+4] * gamma[i1][4] + x8n[i3+5] * gamma[i1][5] +
-            x8n[i3+6] * gamma[i1][6] + x8n[i3+7] * gamma[i1][7];
+     Real_t hgfx[8], hgfy[8], hgfz[8] ;
+     Real_t coefficient;
 
-         Real_t hourmody =
-            y8n[i3] * gamma[i1][0] + y8n[i3+1] * gamma[i1][1] +
-            y8n[i3+2] * gamma[i1][2] + y8n[i3+3] * gamma[i1][3] +
-            y8n[i3+4] * gamma[i1][4] + y8n[i3+5] * gamma[i1][5] +
-            y8n[i3+6] * gamma[i1][6] + y8n[i3+7] * gamma[i1][7];
+     Real_t hourgam0[4], hourgam1[4], hourgam2[4], hourgam3[4] ;
+     Real_t hourgam4[4], hourgam5[4], hourgam6[4], hourgam7[4];
+     Real_t xd1[8], yd1[8], zd1[8] ;
 
-         Real_t hourmodz =
-            z8n[i3] * gamma[i1][0] + z8n[i3+1] * gamma[i1][1] +
-            z8n[i3+2] * gamma[i1][2] + z8n[i3+3] * gamma[i1][3] +
-            z8n[i3+4] * gamma[i1][4] + z8n[i3+5] * gamma[i1][5] +
-            z8n[i3+6] * gamma[i1][6] + z8n[i3+7] * gamma[i1][7];
+     const Index_t *elemToNode = mesh.nodelist(i2);
+     Index_t i3=8*i2;
+     Real_t volinv=Real_t(1.0)/determ[i2];
+     Real_t ss1, mass1, volume13 ;
+     for(Index_t i1=0;i1<4;++i1){
 
-         hourgam0[i1] = gamma[i1][0] -  volinv*(dvdx[i3  ] * hourmodx +
-                                                  dvdy[i3  ] * hourmody +
-                                                  dvdz[i3  ] * hourmodz );
+        Real_t hourmodx =
+           x8n[i3] * gamma[i1][0] + x8n[i3+1] * gamma[i1][1] +
+           x8n[i3+2] * gamma[i1][2] + x8n[i3+3] * gamma[i1][3] +
+           x8n[i3+4] * gamma[i1][4] + x8n[i3+5] * gamma[i1][5] +
+           x8n[i3+6] * gamma[i1][6] + x8n[i3+7] * gamma[i1][7];
 
-         hourgam1[i1] = gamma[i1][1] -  volinv*(dvdx[i3+1] * hourmodx +
-                                                  dvdy[i3+1] * hourmody +
-                                                  dvdz[i3+1] * hourmodz );
+        Real_t hourmody =
+           y8n[i3] * gamma[i1][0] + y8n[i3+1] * gamma[i1][1] +
+           y8n[i3+2] * gamma[i1][2] + y8n[i3+3] * gamma[i1][3] +
+           y8n[i3+4] * gamma[i1][4] + y8n[i3+5] * gamma[i1][5] +
+           y8n[i3+6] * gamma[i1][6] + y8n[i3+7] * gamma[i1][7];
 
-         hourgam2[i1] = gamma[i1][2] -  volinv*(dvdx[i3+2] * hourmodx +
-                                                  dvdy[i3+2] * hourmody +
-                                                  dvdz[i3+2] * hourmodz );
+        Real_t hourmodz =
+           z8n[i3] * gamma[i1][0] + z8n[i3+1] * gamma[i1][1] +
+           z8n[i3+2] * gamma[i1][2] + z8n[i3+3] * gamma[i1][3] +
+           z8n[i3+4] * gamma[i1][4] + z8n[i3+5] * gamma[i1][5] +
+           z8n[i3+6] * gamma[i1][6] + z8n[i3+7] * gamma[i1][7];
 
-         hourgam3[i1] = gamma[i1][3] -  volinv*(dvdx[i3+3] * hourmodx +
-                                                  dvdy[i3+3] * hourmody +
-                                                  dvdz[i3+3] * hourmodz );
+        hourgam0[i1] = gamma[i1][0] -  volinv*(dvdx[i3  ] * hourmodx +
+                                                 dvdy[i3  ] * hourmody +
+                                                 dvdz[i3  ] * hourmodz );
 
-         hourgam4[i1] = gamma[i1][4] -  volinv*(dvdx[i3+4] * hourmodx +
-                                                  dvdy[i3+4] * hourmody +
-                                                  dvdz[i3+4] * hourmodz );
+        hourgam1[i1] = gamma[i1][1] -  volinv*(dvdx[i3+1] * hourmodx +
+                                                 dvdy[i3+1] * hourmody +
+                                                 dvdz[i3+1] * hourmodz );
 
-         hourgam5[i1] = gamma[i1][5] -  volinv*(dvdx[i3+5] * hourmodx +
-                                                  dvdy[i3+5] * hourmody +
-                                                  dvdz[i3+5] * hourmodz );
+        hourgam2[i1] = gamma[i1][2] -  volinv*(dvdx[i3+2] * hourmodx +
+                                                 dvdy[i3+2] * hourmody +
+                                                 dvdz[i3+2] * hourmodz );
 
-         hourgam6[i1] = gamma[i1][6] -  volinv*(dvdx[i3+6] * hourmodx +
-                                                  dvdy[i3+6] * hourmody +
-                                                  dvdz[i3+6] * hourmodz );
+        hourgam3[i1] = gamma[i1][3] -  volinv*(dvdx[i3+3] * hourmodx +
+                                                 dvdy[i3+3] * hourmody +
+                                                 dvdz[i3+3] * hourmodz );
 
-         hourgam7[i1] = gamma[i1][7] -  volinv*(dvdx[i3+7] * hourmodx +
-                                                  dvdy[i3+7] * hourmody +
-                                                  dvdz[i3+7] * hourmodz );
+        hourgam4[i1] = gamma[i1][4] -  volinv*(dvdx[i3+4] * hourmodx +
+                                                 dvdy[i3+4] * hourmody +
+                                                 dvdz[i3+4] * hourmodz );
 
-      }
+        hourgam5[i1] = gamma[i1][5] -  volinv*(dvdx[i3+5] * hourmodx +
+                                                 dvdy[i3+5] * hourmody +
+                                                 dvdz[i3+5] * hourmodz );
+
+        hourgam6[i1] = gamma[i1][6] -  volinv*(dvdx[i3+6] * hourmodx +
+                                                 dvdy[i3+6] * hourmody +
+                                                 dvdz[i3+6] * hourmodz );
+
+        hourgam7[i1] = gamma[i1][7] -  volinv*(dvdx[i3+7] * hourmodx +
+                                                 dvdy[i3+7] * hourmody +
+                                                 dvdz[i3+7] * hourmodz );
+
+     }
 
       /* compute forces */
       /* store forces into h arrays (force arrays) */
